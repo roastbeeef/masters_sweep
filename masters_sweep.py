@@ -92,50 +92,51 @@ def generate_top_combos(df):
 # Streamlit UI
 st.set_page_config(layout="wide")
 st.title("🏌️‍♂️ Masters Fantasy Top 10 Combos")
-st.caption("Auto-refreshes every 5 minutes.")
+tab1, tab2 = st.tabs(["📊 My Sweep & Top 10 Combos", "🏁 Full Leaderboard"])
 
 with st.spinner("Fetching latest leaderboard..."):
     leaderboard_df = merge_data()
     top_10_df = generate_top_combos(leaderboard_df)
 
-st.subheader("🔝 Top 10 Combos (1 player per group)")
-st.dataframe(top_10_df, use_container_width=True)
+with tab1:
+    st.subheader("🔝 Top 10 Player Combinations")
+    st.dataframe(top_10_df, use_container_width=True)
 
-# Sweep teams
-my_teams = [
-    ["Rory McIlroy", "Viktor Hovland", "Shane Lowry", "Min Woo Lee", "Tom Kim", "Keegan Bradley"],
-    ["Scottie Scheffler", "Viktor Hovland", "Shane Lowry", "Min Woo Lee", "Sahith Theegala", "Justin Rose"],
-    ["Ludvig Åberg", "Brooks Koepka", "Shane Lowry", "Wyndham Clark", "Maverick McNealy", "Keegan Bradley"],
-    ["Scottie Scheffler", "Patrick Cantlay", "Shane Lowry", "Wyndham Clark", "Sungjae Im", "Justin Rose"]
-]
+    # Sweep teams
+    my_teams = [
+        ["Rory McIlroy", "Viktor Hovland", "Shane Lowry", "Min Woo Lee", "Tom Kim", "Keegan Bradley"],
+        ["Scottie Scheffler", "Viktor Hovland", "Shane Lowry", "Min Woo Lee", "Sahith Theegala", "Justin Rose"],
+        ["Ludvig Åberg", "Brooks Koepka", "Shane Lowry", "Wyndham Clark", "Maverick McNealy", "Keegan Bradley"],
+        ["Scottie Scheffler", "Patrick Cantlay", "Shane Lowry", "Wyndham Clark", "Sungjae Im", "Justin Rose"]
+    ]
 
-sweep_results = []
-for idx, team in enumerate(my_teams, start=1):
-    team_pts = 0
-    player_pts = []
-    for player in team:
-        match = leaderboard_df[leaderboard_df['PLAYER'].str.upper() == player.upper()]
-        pts = match['PTS_ADJ'].values[0] if not match.empty else 0
-        team_pts += pts
-        player_pts.append(pts)
-    
-    sweep_results.append({
-        'Team': f'Team {idx}',
-        'GROUP_1': team[0],
-        'GROUP_2': team[1],
-        'GROUP_3': team[2],
-        'GROUP_4': team[3],
-        'GROUP_5': team[4],
-        'GROUP_6': team[5],
-        'TOTAL_PTS_ADJ': team_pts
-    })
+    sweep_results = []
+    for idx, team in enumerate(my_teams, start=1):
+        team_pts = 0
+        for player in team:
+            match = leaderboard_df[leaderboard_df['PLAYER'].str.upper() == player.upper()]
+            pts = match['PTS_ADJ'].values[0] if not match.empty else 0
+            team_pts += pts
 
-sweep_df = pd.DataFrame(sweep_results)
+        sweep_results.append({
+            'Team': f'Team {idx}',
+            'GROUP_1': team[0],
+            'GROUP_2': team[1],
+            'GROUP_3': team[2],
+            'GROUP_4': team[3],
+            'GROUP_5': team[4],
+            'GROUP_6': team[5],
+            'TOTAL_PTS_ADJ': team_pts
+        })
 
-st.subheader("📊 My Sweep Teams")
-st.dataframe(sweep_df, use_container_width=True)
+    sweep_df = pd.DataFrame(sweep_results)
+    st.subheader("🧑‍🤝‍🧑 My Sweep Teams")
+    st.dataframe(sweep_df, use_container_width=True)
 
+with tab2:
+    st.subheader("🏁 Full Leaderboard with Points")
+    leaderboard_display = leaderboard_df[['PLAYER', 'SCORE', 'PTS_ADJ']].sort_values(by='PTS_ADJ', ascending=False).reset_index(drop=True)
+    st.dataframe(leaderboard_display, use_container_width=True)
 
-# Optional: Show last updated time
+# Last updated timestamp
 st.markdown(f"⏱️ Last updated: {time.strftime('%Y-%m-%d %H:%M:%S')}")
-
