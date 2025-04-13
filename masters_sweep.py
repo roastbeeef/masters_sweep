@@ -101,6 +101,41 @@ with st.spinner("Fetching latest leaderboard..."):
 st.subheader("🔝 Top 10 Combos (1 player per group)")
 st.dataframe(top_10_df, use_container_width=True)
 
+# Sweep teams
+my_teams = [
+    ["Rory McIlroy", "Viktor Hovland", "Shane Lowry", "Min Woo Lee", "Tom Kim", "Keegan Bradley"],
+    ["Scottie Scheffler", "Viktor Hovland", "Shane Lowry", "Min Woo Lee", "Sahith Theegala", "Justin Rose"],
+    ["Ludvig Åberg", "Brooks Koepka", "Shane Lowry", "Wyndham Clark", "Maverick McNealy", "Keegan Bradley"],
+    ["Scottie Scheffler", "Patrick Cantlay", "Shane Lowry", "Wyndham Clark", "Sungjae Im", "Justin Rose"]
+]
+
+sweep_results = []
+for idx, team in enumerate(my_teams, start=1):
+    team_pts = 0
+    player_pts = []
+    for player in team:
+        match = leaderboard_df[leaderboard_df['PLAYER'].str.upper() == player.upper()]
+        pts = match['PTS_ADJ'].values[0] if not match.empty else 0
+        team_pts += pts
+        player_pts.append(pts)
+    
+    sweep_results.append({
+        'Team': f'Team {idx}',
+        'GROUP_1': team[0],
+        'GROUP_2': team[1],
+        'GROUP_3': team[2],
+        'GROUP_4': team[3],
+        'GROUP_5': team[4],
+        'GROUP_6': team[5],
+        'TOTAL_PTS_ADJ': team_pts
+    })
+
+sweep_df = pd.DataFrame(sweep_results)
+
+st.subheader("📊 My Sweep Teams")
+st.dataframe(sweep_df, use_container_width=True)
+
+
 # Optional: Show last updated time
 st.markdown(f"⏱️ Last updated: {time.strftime('%Y-%m-%d %H:%M:%S')}")
 
